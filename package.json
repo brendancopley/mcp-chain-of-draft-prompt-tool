@@ -25,7 +25,7 @@
     "start": "node dist/index.js",
     "dev": "ts-node-esm dist/index.ts",
     "test": "node dist/test-query.js",
-    "inspector": "npx @modelcontextprotocol/inspector -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY -- node ./index.js",
+    "inspector": "npx @modelcontextprotocol/inspector -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY -- node dist/index.js",
     "open-browser": "sleep 2 && open http://localhost:5173 || xdg-open http://localhost:5173 || start http://localhost:5173",
     "test-inspector": "npm run start & sleep 2 && trap 'kill $!' SIGINT SIGTERM; (npm run inspector & npm run open-browser) || kill $!"
   },
