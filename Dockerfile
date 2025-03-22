@@ -11,18 +11,26 @@ RUN apk add --no-cache \
     musl-dev \
     linux-headers
 
-WORKDIR /app
-
 # Copy package files first
 COPY package*.json ./
+
 WORKDIR /app
-RUN npm install
+
+RUN --mount=type=cache,target=/root/.npm npm install
+
+RUN --mount=type=cache,target=/root/.npm-production npm ci --ignore-scripts --omit-dev
 
 # Set up Python virtual environment and install requirements
 RUN python3 -m venv /app/venv
 ENV PATH="/app/venv/bin:$PATH"
 COPY requirements.txt ./
 RUN . /app/venv/bin/activate && pip3 install --no-cache-dir -r requirements.txt
+
+FROM node:22-alpine AS release
+
+COPY --from=builder /app/dist /app/dist
+COPY --from=builder /app/package.json /app/package.json
+COPY --from=builder /app/package-lock.json /app/package-lock.json
 
 ENV NODE_ENV=production \
     LLM_PROVIDER=anthropic \
@@ -40,9 +48,10 @@ ENV NODE_ENV=production \
 COPY .env .env
 # We'll copy the actual .env file at runtime or use environment variables
 
-
 # Copy the rest of the application
 COPY . .
+
+WORKDIR /app
 
 # Build TypeScript files
 RUN npm run build

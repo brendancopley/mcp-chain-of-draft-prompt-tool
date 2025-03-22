@@ -9,9 +9,15 @@
   "bin": {
     "mcp-chain-of-draft-prompt-tool": "dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && shx chmod +x dist/*.js",
     "build-docker": "docker build -t mcp-chain-of-draft-prompt-tool .",
+    "watch": "tsc --watch",
     "start": "node dist/index.js",
     "dev": "ts-node-esm dist/index.ts",
     "test": "node dist/test-query.js",
@@ -36,23 +42,20 @@
     "url": "https://github.com/brendancopley/mcp-chain-of-draft-prompt-tool/issues"
   },
   "homepage": "https://github.com/brendancopley/mcp-chain-of-draft-prompt-tool#readme",
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
   "dependencies": {
     "@anthropic-ai/sdk": "^0.19.0",
     "@mistralai/mistralai": "^0.1.3",
     "@modelcontextprotocol/sdk": "1.7.0",
+    "chalk": "5",
     "dotenv": "^16.4.5",
     "node-fetch": "^3.3.2",
     "ollama": "^0.4.4",
     "openai": "^4.28.0"
   },
   "devDependencies": {
-    "@types/node": "^20.11.24",
+    "@types/node": "^22",
     "@types/node-fetch": "^2.6.11",
+    "shx": "^0.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },

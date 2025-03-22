@@ -6,11 +6,11 @@
     "esModuleInterop": true,
     "strict": true,
     "outDir": "dist/",
-    "rootDir": ".",
+    "rootDir": "src/",
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
-  "include": ["**/*.ts", "index.ts", "server.ts", "test-query.ts", "types.ts"],
+  "include": ["src/**/*.ts", "src/index.ts", "src/server.tssrc/test-query.tsquery.ts", "src/types.ts"],
   "exclude": ["node_modules", "dist"]
 } 

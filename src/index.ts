@@ -26,6 +26,7 @@ import {
   ReasoningSelector,
   ToolArguments
 } from './types';
+import { logger } from './utils/logger.js';
 
 // Common interfaces for response types
 interface LLMMessage {
@@ -47,6 +48,9 @@ interface ModelInfo {
   name?: string;
 }
 
+// Load environment variables
+dotenv.config();
+
 class UnifiedLLMClient {
   private anthropicClient?: Anthropic;
   private openaiClient?: OpenAI;
@@ -60,11 +64,19 @@ class UnifiedLLMClient {
     this.provider = process.env.LLM_PROVIDER?.toLowerCase() || 'anthropic';
     this.model = process.env.LLM_MODEL || 'claude-3-7-sonnet-latest';
 
+    logger.devLog('Initializing LLM client', {
+      provider: this.provider,
+      model: this.model,
+      env: process.env.NODE_ENV
+    });
+
     // Initialize the appropriate client based on provider
     this.initializeClient();
   }
 
   private initializeClient() {
+    logger.devLog('Initializing LLM provider:', this.provider);
+    
     switch (this.provider) {
       case 'anthropic':
         if (!process.env.ANTHROPIC_API_KEY) {
@@ -105,6 +117,7 @@ class UnifiedLLMClient {
   }
 
   async getAvailableModels(): Promise<string[]> {
+    logger.devLog('Fetching available models');
     try {
       switch (this.provider) {
         case 'anthropic': {
@@ -134,7 +147,12 @@ class UnifiedLLMClient {
           return [];
       }
     } catch (error) {
-      console.error('Error fetching models:', error);
+      logger.error('Error fetching models:', error);
+      logger.devLog('Detailed error:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
       return [];
     }
   }
@@ -145,6 +163,12 @@ class UnifiedLLMClient {
     temperature?: number;
   } = {}): Promise<LLMResponse> {
     const model = options.model || this.model;
+    logger.devLog('Initiating chat:', {
+      model,
+      messageCount: messages.length,
+      options
+    });
+
     const max_tokens = options.max_tokens || undefined;
     const temperature = options.temperature || undefined;
 
@@ -223,14 +247,18 @@ class UnifiedLLMClient {
           throw new Error(`Unsupported LLM provider: ${this.provider}`);
       }
     } catch (error) {
-      console.error('Error in chat:', error);
+      logger.error('Error in chat:', error);
+      logger.devLog('Chat error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        provider: this.provider,
+        model
+      });
       throw error;
     }
   }
 }
-
-// Load environment variables
-dotenv.config();
 
 // Initialize the unified LLM client
 const llmClient = new UnifiedLLMClient();
@@ -544,10 +572,13 @@ const chainOfDraftClient = {
       adaptive_word_limit = true
     } = params;
     
+    logger.devLog('Starting Chain of Draft reasoning', params);
+    
     const startTime = Date.now();
     
     // Analyze problem complexity
     const analysis = complexityEstimator.analyzeProblem(problem, domain);
+    logger.devLog('Problem complexity analysis', analysis);
     const complexity = analysis.estimated_complexity;
     
     // Determine word limit
@@ -1022,7 +1053,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       isError: true
     };
   } catch (error) {
-    console.error("Error executing tool:", error);
+    logger.error('Error executing tool:', error);
     return {
       content: [{
         type: "text",
@@ -1034,23 +1065,28 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 
 // Start the server
-async function runServer() {
+async function startServer() {
   const transport = new StdioServerTransport();
   
-  console.error("Chain of Draft MCP Server starting...");
+  logger.info('Chain of Draft MCP Server starting...');
   
   try {
     // Connect to the transport
     await server.connect(transport);
-    console.error("Server connected to transport");
+    logger.success('Server connected to transport');
   } catch (error) {
-    console.error("Error starting server:", error);
+    logger.error('Error starting server:', error);
     process.exit(1);
   }
 }
 
 // Run the server
-runServer().catch(error => {
-  console.error("Fatal error:", error);
+startServer().catch(error => {
+  logger.error('Fatal error:', error);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (error) => {
+  logger.error('Fatal error:', error);
   process.exit(1);
 }); 
