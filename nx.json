@@ -1,9 +1,19 @@
 {
   "extends": "nx/presets/npm.json",
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "affected": {
-    "defaultBase": "main"
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*"],
+    "production": ["default"]
   },
+  "plugins": [
+    {
+      "plugin": "@getlarge/nx-node-sea",
+      "options": {
+        "seaTargetName": "sea-build",
+        "buildTarget": "build"
+      }
+    }
+  ],
   "tasksRunnerOptions": {
     "default": {
       "runner": "nx/tasks-runners/default",
@@ -15,7 +25,14 @@
   "targetDefaults": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["production", "^production"]
+      "inputs": [],
+      "options": {
+        "outputPath": "dist",
+        "main": "src/index.ts",
+        "tsConfig": "tsconfig.json",
+        "rootDir": "src",
+        "outputFileName": "index.js"
+      }
     }
   }
 } 

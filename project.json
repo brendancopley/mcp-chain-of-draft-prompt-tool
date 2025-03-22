@@ -3,6 +3,15 @@
   "$schema": "node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "src",
   "projectType": "application",
+  "plugins": [
+    {
+      "plugin": "@getlarge/nx-node-sea",
+      "options": {
+        "seaTargetName": "sea-build",
+        "buildTarget": "build"
+      }
+    }
+  ],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
@@ -12,12 +21,6 @@
         "main": "src/index.ts",
         "tsConfig": "tsconfig.json",
         "assets": ["package.json"]
-      }
-    },
-    "sea": {
-      "executor": "@nx-node-sea/plugin:build",
-      "options": {
-        "configPath": "sea-config.json"
       }
     }
   }
