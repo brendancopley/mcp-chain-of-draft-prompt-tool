@@ -251,7 +251,7 @@ To help developers build with MCP, we want to offer documentation for:
 *   **Client Examples**: Comprehensive reference client implementation(s), demonstrating all protocol features
 *   **Protocol Drafting**: Streamlined process for proposing and incorporating new protocol features
 
-## serverribution & Discovery
+## Distribution & Discovery
 
 Looking ahead, we're exploring ways to make MCP servers more accessible. Some areas we may investigate include:
 
