@@ -1,6 +1,6 @@
 {
   "name": "mcp-chain-of-draft-prompt-tool",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "MCP Chain of Draft (CoD) Prompt Tool - A Model Context Protocol tool for efficient reasoning",
   "type": "module",
   "engines": {
@@ -16,18 +16,18 @@
   ],
   "scripts": {
     "build": "tsc && shx chmod +x dist/*.js",
-    "build-docker": "docker build -t mcp-chain-of-draft-prompt-tool .",
+    "build:docker": "docker build -t mcp-chain-of-draft-prompt-tool .",
+    "build:sea": "nx build && nx run-many --target=sea --all",
+    "build:macos": "nx build && nx run-many --target=sea --all --args=\"--platform=darwin\"",
+    "build:linux": "nx build && nx run-many --target=sea --all --args=\"--platform=linux\"",
+    "build:windows": "nx build && nx run-many --target=sea --all --args=\"--platform=win32\"",
     "watch": "tsc --watch",
     "start": "node dist/index.js",
     "dev": "ts-node-esm dist/index.ts",
     "test": "node dist/test-query.js",
     "inspector": "npx @modelcontextprotocol/inspector -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY -- node ./index.js",
     "open-browser": "sleep 2 && open http://localhost:5173 || xdg-open http://localhost:5173 || start http://localhost:5173",
-    "test-inspector": "npm run start & sleep 2 && trap 'kill $!' SIGINT SIGTERM; (npm run inspector & npm run open-browser) || kill $!",
-    "build:sea": "nx build && nx run-many --target=sea --all",
-    "build:macos": "nx build && nx run-many --target=sea --all --args=\"--platform=darwin\"",
-    "build:linux": "nx build && nx run-many --target=sea --all --args=\"--platform=linux\"",
-    "build:windows": "nx build && nx run-many --target=sea --all --args=\"--platform=win32\""
+    "test-inspector": "npm run start & sleep 2 && trap 'kill $!' SIGINT SIGTERM; (npm run inspector & npm run open-browser) || kill $!"
   },
   "keywords": [
     "mcp",
