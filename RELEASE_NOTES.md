@@ -1,8 +1,8 @@
-# Release Notes - v1.1.0
+# Release Notes - v1.1.1
 
 ## MCP Chain of Draft Prompt Tool
 
-We're excited to announce version 1.1.0 of the MCP Chain of Draft Prompt Tool! This release introduces BYOLLM support and improves documentation clarity.
+We're excited to announce version 1.1.1 of the MCP Chain of Draft Prompt Tool! This release introduces BYOLLM support and improves documentation clarity.
 
 ### What's New
 
