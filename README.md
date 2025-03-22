@@ -2,15 +2,73 @@
 
 [![smithery badge](https://smithery.ai/badge/@brendancopley/mcp-chain-of-draft-prompt-tool)](https://smithery.ai/server/@brendancopley/mcp-chain-of-draft-prompt-tool)
 
+## Overview
+
+The MCP Chain of Draft (CoD) Prompt Tool is a powerful Model Context Protocol tool that enhances LLM reasoning by transforming standard prompts into either Chain of Draft (CoD) or Chain of Thought (CoT) format. Here's how it works:
+
+1. **Input Transformation**: Your regular prompt is automatically transformed into a CoD/CoT format
+2. **LLM Processing**: The transformed prompt is passed to your chosen LLM (Claude, GPT, Ollama, or local models)
+3. **Enhanced Reasoning**: The LLM processes the request using structured reasoning steps
+4. **Result Transformation**: The response is transformed back into a clear, concise format
+
+This approach significantly improves reasoning quality while reducing token usage and maintaining high accuracy.
+
+## BYOLLM Support
+
+This tool supports a "Bring Your Own LLM" approach, allowing you to use any language model of your choice:
+
+### Supported LLM Integrations
+- **Cloud Services**
+  - Anthropic Claude
+  - OpenAI GPT models
+  - Mistral AI
+- **Local Models**
+  - Ollama (all models)
+  - Local LLama variants
+  - Any model supporting chat completion API
+
+### Configuring Your LLM
+
+1. **Cloud Services**
+   ```bash
+   # For Anthropic Claude
+   export ANTHROPIC_API_KEY=your_key_here
+   
+   # For OpenAI
+   export OPENAI_API_KEY=your_key_here
+   
+   # For Mistral AI
+   export MISTRAL_API_KEY=your_key_here
+   ```
+
+2. **Local Models with Ollama**
+   ```bash
+   # First install Ollama
+   curl https://ollama.ai/install.sh | sh
+   
+   # Pull your preferred model
+   ollama pull llama2
+   # or
+   ollama pull mistral
+   # or any other model
+   
+   # Configure the tool to use Ollama
+   export MCP_LLM_PROVIDER=ollama
+   export MCP_OLLAMA_MODEL=llama2  # or your chosen model
+   ```
+
+3. **Custom Local Models**
+   ```bash
+   # Point to your local model API
+   export MCP_LLM_PROVIDER=custom
+   export MCP_CUSTOM_LLM_ENDPOINT=http://localhost:your_port
+   ```
+
 ## Credits
 
 This project implements the Chain of Draft (CoD) reasoning approach as a Model Context Protocol (MCP) prompt tool for Claude. The core Chain of Draft implementation is based on the work by [stat-guy](https://github.com/stat-guy/chain-of-draft). We extend our gratitude for their pioneering work in developing this efficient reasoning approach.
 
 Original Repository: [https://github.com/stat-guy/chain-of-draft](https://github.com/stat-guy/chain-of-draft)
-
-## Overview
-
-This MCP prompt tool implements the Chain of Draft (CoD) reasoning approach as described in the research paper "Chain of Draft: Thinking Faster by Writing Less". CoD is a novel paradigm that allows LLMs to generate minimalistic yet informative intermediate reasoning outputs while solving tasks, significantly reducing token usage while maintaining accuracy.
 
 ## Key Benefits
 
@@ -190,8 +248,11 @@ If you want to use the Chain of Draft client directly in your Python code:
 ```python
 from client import ChainOfDraftClient
 
-# Create client 
-cod_client = ChainOfDraftClient()
+# Create client with specific LLM provider
+cod_client = ChainOfDraftClient(
+    llm_provider="ollama",  # or "anthropic", "openai", "mistral", "custom"
+    model_name="llama2"     # specify your model
+)
 
 # Use directly
 result = await cod_client.solve_with_reasoning(
@@ -209,24 +270,18 @@ print(f"Tokens used: {result['token_count']}")
 For TypeScript/Node.js applications:
 
 ```typescript
-import { Anthropic } from "@anthropic-ai/sdk";
-import dotenv from "dotenv";
-import { ChainOfDraftClient, ChainOfDraftParams, ChainOfDraftResult } from './types';
+import { ChainOfDraftClient } from './lib/chain-of-draft-client';
 
-// Load environment variables
-dotenv.config();
-
-// Create the Anthropic client
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+// Create client with your preferred LLM
+const client = new ChainOfDraftClient({
+  provider: 'ollama',           // or 'anthropic', 'openai', 'mistral', 'custom'
+  model: 'llama2',             // your chosen model
+  endpoint: 'http://localhost:11434'  // for custom endpoints
 });
-
-// Import the Chain of Draft client
-import chainOfDraftClient from './lib/chain-of-draft-client';
 
 // Use the client
 async function solveMathProblem() {
-  const result: ChainOfDraftResult = await chainOfDraftClient.solveWithReasoning({
+  const result = await client.solveWithReasoning({
     problem: "Solve: 247 + 394 = ?",
     domain: "math",
     max_words_per_step: 5
