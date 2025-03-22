@@ -120,8 +120,8 @@ Original Repository: [https://github.com/stat-guy/chain-of-draft](https://github
 
 ### Prerequisites
 - Python 3.10+ (for Python implementation)
-- Node.js 18+ (for JavaScript implementation)
-- Anthropic API key
+- Node.js 22+ (for JavaScript implementation)
+- Nx (for building Single Executable Applications)
 
 ### Python Installation
 
@@ -142,12 +142,8 @@ Original Repository: [https://github.com/stat-guy/chain-of-draft](https://github
 ### JavaScript/TypeScript Installation
 
 1. Clone the repository
-2. Install dependencies using yarn (recommended) or npm:
+2. Install dependencies:
    ```bash
-   # Using yarn (recommended)
-   yarn install
-
-   # Using npm
    npm install
    ```
 3. Configure API keys in `.env` file:
@@ -156,24 +152,80 @@ Original Repository: [https://github.com/stat-guy/chain-of-draft](https://github
    ```
 4. Build and run the server:
    ```bash
-   # Build TypeScript files
-   yarn build
-   # or npm run build
+   # Build TypeScript files using Nx
+   npm run nx build
 
    # Start the server
-   yarn start
-   # or npm start
+   npm start
 
    # For development with auto-reload:
-   yarn dev
-   # or npm run dev
+   npm run dev
    ```
 
 Available scripts:
-- `yarn build`: Compiles TypeScript to JavaScript in the `server` directory
-- `yarn start`: Runs the compiled server from `server`
-- `yarn test`: Runs the test query against the server
-- `yarn dev`: Runs the TypeScript server directly using ts-node (useful for development)
+- `npm run nx build`: Compiles TypeScript to JavaScript using Nx build system
+- `npm run build:sea`: Creates Single Executable Applications for all platforms
+- `npm start`: Runs the compiled server from `dist`
+- `npm test`: Runs the test query against the server
+- `npm run dev`: Runs the TypeScript server directly using ts-node (useful for development)
+
+The project uses Nx as its build system, providing:
+- Efficient caching and incremental builds
+- Cross-platform build support
+- Integrated SEA generation
+- Dependency graph visualization
+- Consistent build process across environments
+
+## Single Executable Applications (SEA)
+
+This project supports building Single Executable Applications (SEA) using Node.js 22+ and the [@getlarge/nx-node-sea](https://github.com/getlarge/nx-node-sea) plugin. This allows you to create standalone executables that don't require Node.js to be installed on the target system.
+
+### Building SEA Executables
+
+The project includes several scripts for building SEA executables:
+
+```bash
+# Build for all platforms
+npm run build:sea
+
+# Build for specific platforms
+npm run build:macos   # macOS
+npm run build:linux   # Linux
+npm run build:windows # Windows
+```
+
+### SEA Build Configuration
+
+The project uses Nx for managing the build process. The SEA configuration is handled through the nx-node-sea plugin, which provides a streamlined way to create Node.js single executable applications.
+
+Key features of the SEA build process:
+- Cross-platform support (macOS, Linux, Windows)
+- Automatic dependency bundling
+- Optimized binary size
+- No runtime dependencies required
+
+### Using SEA Executables
+
+Once built, the SEA executables can be found in the `dist` directory. These executables:
+- Are completely standalone
+- Don't require Node.js installation
+- Can be distributed and run directly
+- Maintain all functionality of the original application
+
+For Claude Desktop integration with SEA executables, update your configuration to use the executable path:
+
+```json
+{
+    "mcpServers": {
+        "chain-of-draft-prompt-tool": {
+            "command": "/path/to/mcp-chain-of-draft-prompt-tool",
+            "env": {
+                "ANTHROPIC_API_KEY": "your_api_key_here"
+            }
+        }
+    }
+}
+```
 
 ## Claude Desktop Integration
 
@@ -224,6 +276,96 @@ claude mcp add chain-of-draft-prompt-tool -e ANTHROPIC_API_KEY="your_api_key_her
 # For JavaScript implementation
 claude mcp add chain-of-draft-prompt-tool -e ANTHROPIC_API_KEY="your_api_key_here" "node /absolute/path/to/cod/index.js"
 ```
+
+## Using with Dive GUI
+
+[Dive](https://github.com/OpenAgentPlatform/Dive) is an excellent open-source MCP Host Desktop Application that provides a user-friendly GUI for interacting with MCP tools like this one. It supports multiple LLMs including ChatGPT, Anthropic Claude, Ollama, and other OpenAI-compatible models.
+
+### Integrating with Dive
+
+1. Download and install Dive from their [releases page](https://github.com/OpenAgentPlatform/Dive/releases)
+
+2. Configure the Chain of Draft tool in Dive's MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "chain-of-draft-prompt-tool": {
+      "command": "/path/to/mcp-chain-of-draft-prompt-tool",
+      "enabled": true,
+      "env": {
+        "ANTHROPIC_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+If you're using the non-SEA version:
+```json
+{
+  "mcpServers": {
+    "chain-of-draft-prompt-tool": {
+      "command": "node",
+      "args": ["/path/to/dist/index.js"],
+      "enabled": true,
+      "env": {
+        "ANTHROPIC_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+### Key Benefits of Using Dive
+
+- 🌐 Universal LLM Support with multiple API key management
+- 💻 Cross-platform availability (Windows, MacOS, Linux)
+- 🔄 Seamless MCP integration in both stdio and SSE modes
+- 🌍 Multi-language interface
+- 💡 Custom instructions and system prompts
+- 🔄 Automatic updates
+
+Using Dive provides a convenient way to interact with the Chain of Draft tool through a modern, feature-rich interface while maintaining all the benefits of the MCP protocol.
+
+## Testing with MCP Inspector
+
+The project includes integration with the MCP Inspector tool, which provides a visual interface for testing and debugging MCP tools. This is especially useful during development or when you want to inspect the tool's behavior.
+
+### Running the Inspector
+
+You can start the MCP Inspector using the provided npm script:
+
+```bash
+# Start the MCP Inspector with the tool
+npm run test-inspector
+
+# Or run it manually
+npx @modelcontextprotocol/inspector -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY -- node dist/index.js
+```
+
+This will:
+1. Start the MCP server in the background
+2. Launch the MCP Inspector interface in your default browser
+3. Connect to the running server for testing
+
+### Using the Inspector Interface
+
+The MCP Inspector provides:
+- 🔍 Real-time visualization of tool calls and responses
+- 📝 Interactive testing of MCP functions
+- 🔄 Request/response history
+- 🐛 Debug information for each interaction
+- 📊 Performance metrics and timing data
+
+This makes it an invaluable tool for:
+- Development and debugging
+- Understanding tool behavior
+- Testing different inputs and scenarios
+- Verifying MCP compliance
+- Performance optimization
+
+The Inspector will be available at `http://localhost:5173` by default.
 
 ## Available Tools
 
