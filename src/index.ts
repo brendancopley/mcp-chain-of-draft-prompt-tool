@@ -10,7 +10,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { Anthropic } from "@anthropic-ai/sdk";
 import OpenAI from "openai";
-import MistralAI from "@mistralai/mistralai";
+import { Mistral } from "@mistralai/mistralai";
 import { Ollama, type ListResponse, type ModelResponse } from "ollama";
 import dotenv from "dotenv";
 import {
@@ -54,7 +54,7 @@ dotenv.config();
 class UnifiedLLMClient {
   private anthropicClient?: Anthropic;
   private openaiClient?: OpenAI;
-  private mistralClient?: MistralAI;
+  private mistralClient?: Mistral;
   private ollamaClient?: Ollama;
   private provider: string;
   private model: string;
@@ -102,7 +102,9 @@ class UnifiedLLMClient {
         if (!process.env.MISTRAL_API_KEY) {
           throw new Error('MISTRAL_API_KEY is required for Mistral provider');
         }
-        this.mistralClient = new MistralAI(process.env.MISTRAL_API_KEY);
+        this.mistralClient = new Mistral({
+          apiKey: process.env.MISTRAL_API_KEY
+        });
         break;
 
       case 'ollama':
@@ -135,9 +137,10 @@ class UnifiedLLMClient {
           const openaiModels = await this.openaiClient!.models.list();
           return openaiModels.data.map((model: ModelInfo) => model.id);
 
-        case 'mistral':
-          const mistralModels = await this.mistralClient!.listModels();
-          return mistralModels.data.map((model: ModelInfo) => model.id);
+        case 'mistral': {
+          const response = await this.mistralClient!.models.list();
+          return (response.data || []).map(model => model.id);
+        }
 
         case 'ollama':
           const ollamaModels = await this.ollamaClient!.list();
@@ -184,8 +187,25 @@ class UnifiedLLMClient {
             max_tokens: max_tokens || 1000,
             temperature: temperature || 0.7
           });
+          
+          // Handle different content block types safely
+          const content = response.content[0];
+          let textContent = '';
+          
+          try {
+            if (content && typeof content === 'object') {
+              // Try to access text property safely
+              const text = 'text' in content ? content.text : null;
+              textContent = text ? String(text) : JSON.stringify(content);
+            } else {
+              textContent = String(content);
+            }
+          } catch (e) {
+            textContent = JSON.stringify(content);
+          }
+          
           return {
-            content: response.content[0].text,
+            content: textContent,
             usage: {
               input_tokens: response.usage?.input_tokens || 0,
               output_tokens: response.usage?.output_tokens || 0
@@ -210,17 +230,34 @@ class UnifiedLLMClient {
         }
 
         case 'mistral': {
-          const response = await this.mistralClient!.chat({
+          const response = await this.mistralClient!.chat.complete({
             model,
-            messages,
+            messages: messages.map(m => ({
+              role: m.role as 'user' | 'assistant',
+              content: m.content
+            })),
             maxTokens: max_tokens,
-            temperature
+            temperature: temperature
           });
+          
+          const messageContent = response.choices?.[0]?.message?.content;
+          let content: string;
+          
+          if (Array.isArray(messageContent)) {
+            content = messageContent.map(chunk => 
+              typeof chunk === 'string' ? chunk : JSON.stringify(chunk)
+            ).join('');
+          } else if (typeof messageContent === 'string') {
+            content = messageContent;
+          } else {
+            throw new Error('Invalid content format in Mistral response');
+          }
+          
           return {
-            content: response.choices[0].message.content || '',
+            content,
             usage: {
-              input_tokens: response.usage?.prompt_tokens || 0,
-              output_tokens: response.usage?.completion_tokens || 0
+              input_tokens: response.usage?.promptTokens || 0,
+              output_tokens: response.usage?.completionTokens || 0
             }
           };
         }
