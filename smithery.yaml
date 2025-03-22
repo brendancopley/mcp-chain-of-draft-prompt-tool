@@ -8,9 +8,9 @@ startCommand:
     # A function that produces the CLI command to start the MCP on stdio.
     |-
     (config) => ({
-      "command": "node",ß
+      "command": "node",
       "args": [
-        "index.js"
+        "dist/index.js"
       ],
       env: {
         NODE_ENV: config.NODE_ENV || 'production',

@@ -17,7 +17,7 @@
     "test": "node dist/test-query.js",
     "inspector": "npx @modelcontextprotocol/inspector -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY -- node ./index.js",
     "open-browser": "sleep 2 && open http://localhost:5173 || xdg-open http://localhost:5173 || start http://localhost:5173",
-    "test:inspector": "npm run start & sleep 2 && trap 'kill $!' SIGINT SIGTERM; (npm run inspector & npm run open-browser) || kill $!"
+    "test-inspector": "npm run start & sleep 2 && trap 'kill $!' SIGINT SIGTERM; (npm run inspector & npm run open-browser) || kill $!"
   },
   "keywords": [
     "mcp",
@@ -28,6 +28,19 @@
   ],
   "author": "brendancopley",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brendancopley/mcp-chain-of-draft-prompt-tool.git"
+  },
+  "bugs": {
+    "url": "https://github.com/brendancopley/mcp-chain-of-draft-prompt-tool/issues"
+  },
+  "homepage": "https://github.com/brendancopley/mcp-chain-of-draft-prompt-tool#readme",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "@anthropic-ai/sdk": "^0.19.0",
     "@mistralai/mistralai": "^0.1.3",
