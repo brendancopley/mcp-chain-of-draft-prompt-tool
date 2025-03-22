@@ -1074,6 +1074,25 @@ async function startServer() {
     // Connect to the transport
     await server.connect(transport);
     logger.success('Server connected to transport');
+
+    // Keep the process alive
+    process.stdin.resume();
+
+    // Handle shutdown signals
+    const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT'];
+    signals.forEach(signal => {
+      process.on(signal, async () => {
+        logger.info(`Received ${signal}, shutting down gracefully...`);
+        try {
+          await server.close();
+          logger.success('Server disconnected successfully');
+          process.exit(0);
+        } catch (error) {
+          logger.error('Error during shutdown:', error);
+          process.exit(1);
+        }
+      });
+    });
   } catch (error) {
     logger.error('Error starting server:', error);
     process.exit(1);

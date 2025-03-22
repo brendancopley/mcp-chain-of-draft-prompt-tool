@@ -1,36 +1,29 @@
-# Use the official Node.js image as the base image
 FROM node:22.12-alpine AS builder
 
-# Install Python 3, pip and build dependencies
 RUN apk add --no-cache \
-    python3 \
+    gcc \
+    linux-headers \
+    musl-dev \
     py3-pip \
     py3-virtualenv \
-    gcc \
-    python3-dev \
-    musl-dev \
-    linux-headers
-
-# Copy package files first
-COPY package*.json ./
+    python3 \
+    python3-dev
 
 WORKDIR /app
 
-RUN --mount=type=cache,target=/root/.npm npm install
+COPY package*.json ./
 
-RUN --mount=type=cache,target=/root/.npm-production npm ci --ignore-scripts --omit-dev
+# Note: Copying .env file - WARNING: Not recommended for production use
+COPY .env ./
 
-# Set up Python virtual environment and install requirements
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --ignore-scripts --omit-dev
+
 RUN python3 -m venv /app/venv
 ENV PATH="/app/venv/bin:$PATH"
 COPY requirements.txt ./
-RUN . /app/venv/bin/activate && pip3 install --no-cache-dir -r requirements.txt
-
-FROM node:22-alpine AS release
-
-COPY --from=builder /app/dist /app/dist
-COPY --from=builder /app/package.json /app/package.json
-COPY --from=builder /app/package-lock.json /app/package-lock.json
+RUN --mount=type=cache,target=/root/.cache/pip \
+    . /app/venv/bin/activate && pip3 install --no-cache-dir -r requirements.txt
 
 ENV NODE_ENV=production \
     LLM_PROVIDER=anthropic \
@@ -44,19 +37,34 @@ ENV NODE_ENV=production \
     COD_MAX_TOKENS=500 \
     COD_MAX_WORDS_PER_STEP=8
 
-    # Copy environment files
-COPY .env .env
-# We'll copy the actual .env file at runtime or use environment variables
-
-# Copy the rest of the application
 COPY . .
+
+RUN npm run build
+
+FROM node:22-alpine AS release
+
+RUN apk add --no-cache \
+    py3-pip \
+    py3-virtualenv \
+    python3
 
 WORKDIR /app
 
-# Build TypeScript files
-RUN npm run build
+COPY --from=builder /app/dist /app/dist
+COPY --from=builder /app/package*.json /app/
+COPY --from=builder /app/requirements.txt /app/
+COPY --from=builder /app/venv /app/venv
+COPY --from=builder /app/.env /app/.env
 
-# Command to run the server with virtual environment
-CMD ["/bin/sh", "-c", "cd /app && source /app/venv/bin/activate"]
+ENV PATH="/app/venv/bin:$PATH" \
+    NODE_ENV=production \
+    LLM_PROVIDER=anthropic \
+    LLM_MODEL=claude-3-7-sonnet-latest
 
-ENTRYPOINT ["node", "dist/index.js"]
+# Install production npm dependencies
+RUN npm ci --omit=dev
+
+RUN printf '#!/bin/sh\nsource /app/venv/bin/activate\nexec node /app/dist/index.js\n' > /app/start.sh && \
+    chmod +x /app/start.sh
+
+ENTRYPOINT ["/app/start.sh"]
