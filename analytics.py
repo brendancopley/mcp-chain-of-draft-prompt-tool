@@ -116,7 +116,7 @@ class AnalyticsService:
         """Calculate token reduction statistics for CoD vs CoT."""
         session = self.Session()
         try:
-            domains = session.query(InferenceRecord.domain).serverinct().all()
+            domains = session.query(InferenceRecord.domain).distinct().all()
             results = []
             
             for domain_row in domains:
@@ -153,7 +153,7 @@ class AnalyticsService:
         """Compare accuracy between CoD and CoT approaches."""
         session = self.Session()
         try:
-            domains = session.query(InferenceRecord.domain).serverinct().all()
+            domains = session.query(InferenceRecord.domain).distinct().all()
             results = []
             
             for domain_row in domains:
