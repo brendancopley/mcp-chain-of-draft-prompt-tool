@@ -24,29 +24,10 @@
     "inspector": "npx @modelcontextprotocol/inspector -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY -- node ./index.js",
     "open-browser": "sleep 2 && open http://localhost:5173 || xdg-open http://localhost:5173 || start http://localhost:5173",
     "test-inspector": "npm run start & sleep 2 && trap 'kill $!' SIGINT SIGTERM; (npm run inspector & npm run open-browser) || kill $!",
-    "build:binaries": "npm run build && pkg .",
-    "build:macos": "npm run build && pkg . --targets node22-macos-x64,node22-macos-arm64",
-    "build:linux": "npm run build && pkg . --targets node22-linux-x64,node22-linux-arm64",
-    "build:windows": "npm run build && pkg . --targets node22-win-x64",
-    "build:all": "npm run build && pkg . --targets node22-macos-x64,node22-macos-arm64,node22-linux-x64,node22-linux-arm64,node22-win-x64"
-  },
-  "pkg": {
-    "scripts": "dist/**/*.js",
-    "assets": [
-      "dist/**/*",
-      "node_modules/**/*",
-      "config.json",
-      "promptsConfig.json",
-      "system_template.md"
-    ],
-    "targets": [
-      "node22-macos-x64",
-      "node22-macos-arm64",
-      "node22-linux-x64",
-      "node22-linux-arm64",
-      "node22-win-x64"
-    ],
-    "outputPath": "binaries"
+    "build:sea": "nx build && nx run-many --target=sea --all",
+    "build:macos": "nx build && nx run-many --target=sea --all --args=\"--platform=darwin\"",
+    "build:linux": "nx build && nx run-many --target=sea --all --args=\"--platform=linux\"",
+    "build:windows": "nx build && nx run-many --target=sea --all --args=\"--platform=win32\""
   },
   "keywords": [
     "mcp",
@@ -76,9 +57,13 @@
     "openai": "^4.28.0"
   },
   "devDependencies": {
+    "@getlarge/nx-node-sea": "^0.2.0",
+    "@nx/devkit": "^20.6.2",
+    "@nx/js": "^20.6.2",
+    "@nx/workspace": "^20.6.2",
     "@types/node": "^22",
     "@types/node-fetch": "^2.6.11",
-    "pkg": "^5.8.1",
+    "nx": "^20.6.2",
     "shx": "^0.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
