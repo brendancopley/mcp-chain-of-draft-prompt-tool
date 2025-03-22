@@ -12,7 +12,9 @@ WORKDIR /app
 # Copy dependency files
 COPY package*.json requirements.txt ./
 
-COPY .env ./
+# Setup .env file (use .env if it exists, otherwise use .env.example)
+COPY .env* ./
+RUN if [ ! -f .env ] && [ -f .env.example ]; then cp .env.example .env; fi
 
 # Install Node.js dependencies with caching
 RUN --mount=type=cache,target=/root/.npm \
