@@ -1,5 +1,5 @@
 # Use the official Node.js image as the base image
-FROM node:22-alpine
+FROM node:22.12-alpine AS builder
 
 # Install Python 3, pip and build dependencies
 RUN apk add --no-cache \
@@ -24,10 +24,6 @@ ENV PATH="/app/venv/bin:$PATH"
 COPY requirements.txt ./
 RUN . /app/venv/bin/activate && pip3 install --no-cache-dir -r requirements.txt
 
-# Copy environment files
-COPY .env .env
-# We'll copy the actual .env file at runtime or use environment variables
-
 ENV NODE_ENV=production \
     LLM_PROVIDER=anthropic \
     LLM_MODEL=claude-3-7-sonnet-latest \
@@ -40,6 +36,11 @@ ENV NODE_ENV=production \
     COD_MAX_TOKENS=500 \
     COD_MAX_WORDS_PER_STEP=8
 
+    # Copy environment files
+COPY .env .env
+# We'll copy the actual .env file at runtime or use environment variables
+
+
 # Copy the rest of the application
 COPY . .
 
@@ -47,4 +48,6 @@ COPY . .
 RUN npm run build
 
 # Command to run the server with virtual environment
-CMD ["/bin/sh", "-c", "cd /app && source /app/venv/bin/activate && node ./index.js"]
+CMD ["/bin/sh", "-c", "cd /app && source /app/venv/bin/activate"]
+
+ENTRYPOINT ["node", "dist/index.js"]
