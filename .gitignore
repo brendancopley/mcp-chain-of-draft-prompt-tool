@@ -42,3 +42,7 @@ ENV/
 Thumbs.db
 node_modules/*
 dist/*
+
+# Binary builds
+binaries/
+*.exe
