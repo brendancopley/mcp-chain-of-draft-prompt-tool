@@ -66,7 +66,7 @@ To get started with the new version:
 
 ```bash
 # Using npm package
-npm install mcp-chain-of-draft-prompt-tool@1.1.0
+npm install mcp-chain-of-draft-prompt-tool@1.1.1
 
 # Or download the appropriate binary for your platform from the releases page
 ```
