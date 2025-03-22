@@ -1,0 +1,303 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+name: "@brendancopley/mcp-chain-of-draft-prompt-tool"
+description: "A TypeScript-based Model Context Protocol (MCP) server for Chain of Draft reasoning"
+version: "1.0.0"
+
+build:
+  dockerfile: Dockerfile
+  context: .
+  args:
+    NODE_VERSION: "^22"
+
+env:
+  # LLM Provider Configuration
+  - name: LLM_PROVIDER
+    required: false
+    default: "anthropic"
+    description: "Choose which provider to use: 'anthropic', 'openai', 'mistral', or 'ollama'"
+  
+  - name: LLM_MODEL
+    required: false
+    default: "claude-3-7-sonnet-latest"
+    description: "Default model to use for the selected provider"
+
+  # Provider API Keys
+  - name: ANTHROPIC_API_KEY
+    required: false
+    secret: true
+    description: "Anthropic API key for Claude"
+  
+  - name: OPENAI_API_KEY
+    required: false
+    secret: true
+    description: "OpenAI API key"
+  
+  - name: MISTRAL_API_KEY
+    required: false
+    secret: true
+    description: "Mistral API key"
+
+  # Provider Base URLs
+  - name: ANTHROPIC_BASE_URL
+    required: false
+    default: "https://api.anthropic.com"
+    description: "Anthropic API base URL"
+  
+  - name: OPENAI_BASE_URL
+    required: false
+    default: "https://api.openai.com"
+    description: "OpenAI API base URL"
+  
+  - name: OLLAMA_BASE_URL
+    required: false
+    default: "http://localhost:11434"
+    description: "Ollama base URL for local deployment"
+
+  # Chain of Draft Settings
+  - name: COD_MAX_WORDS_PER_STEP
+    required: false
+    default: "5"
+    description: "Maximum words per reasoning step"
+  
+  - name: ENFORCE_FORMAT
+    required: false
+    default: "true"
+    description: "Whether to enforce format restrictions"
+  
+  - name: ADAPTIVE_WORD_LIMIT
+    required: false
+    default: "true"
+    description: "Enable adaptive word limits based on complexity"
+
+  # Database Settings
+  - name: COD_DB_URL
+    required: false
+    default: "sqlite:///cod_analytics.db"
+    description: "Database URL for analytics"
+  
+  - name: COD_EXAMPLES_DB
+    required: false
+    default: "cod_examples.db"
+    description: "Database file for examples"
+
+  # Default Settings
+  - name: COD_DEFAULT_MODEL
+    required: false
+    default: "claude-3-7-sonnet-latest"
+    description: "Default model for Chain of Draft"
+  
+  - name: COD_MAX_TOKENS
+    required: false
+    default: "500"
+    description: "Maximum tokens per request"
+
+  - name: NODE_ENV
+    required: false
+    default: "production"
+    description: "Node environment mode"
+
+ports:
+  - 3000:3000
+
+health:
+  path: /health
+  interval: 30s
+  timeout: 5s
+  retries: 3
+
+resources:
+  cpu: 0.5
+  memory: 512Mi
+
+dependencies:
+  system:
+    - python3
+    - py3-pip
+    - py3-virtualenv
+    - gcc
+    - python3-dev
+    - musl-dev
+    - linux-headers
+
+metadata:
+  category: AI/ML
+  tags:
+    - mcp
+    - claude
+    - reasoning
+    - chain-of-draft
+    - python
+    - nodejs
+
+type: stdio
+configSchema:
+  type: "object"
+  title: "MCP Server Configuration"
+  description: "Configuration options for the MCP server"
+  properties:
+    chainOfDraft:
+      type: "object"
+      title: "Chain of Draft Tool"
+      description: "Configuration for the Chain of Draft reasoning tool"
+      properties:
+        enabled:
+          type: "boolean"
+          default: true
+          description: "Enable/disable the Chain of Draft tool"
+        maxWordsPerStep:
+          type: "number"
+          default: 8
+          minimum: 3
+          maximum: 10000
+          description: "Maximum words per reasoning step"
+        adaptiveWordLimit:
+          type: "boolean"
+          default: true
+          description: "Enable/disable adaptive word limits based on complexity"
+    methods:
+      type: "object"
+      title: "Available Methods"
+      description: "Configuration for available reasoning methods"
+      properties:
+        chainOfDraftSolve:
+          type: "object"
+          description: "Solve a reasoning problem using Chain of Draft approach"
+          properties:
+            problem:
+              type: "string"
+              description: "The problem to solve"
+            domain:
+              type: "string"
+              description: "Domain for context (math, logic, code, common-sense, etc.)"
+            maxWordsPerStep:
+              type: "number"
+              description: "Maximum words per reasoning step"
+            approach:
+              type: "string"
+              description: "Force 'CoD' or 'CoT' approach"
+            enforceFormat:
+              type: "boolean"
+              description: "Whether to enforce the word limit"
+            adaptiveWordLimit:
+              type: "boolean"
+              description: "Adjust word limits based on complexity"
+          required: ["problem"]
+        mathSolve:
+          type: "object"
+          description: "Solve a math problem using Chain of Draft reasoning"
+          properties:
+            problem:
+              type: "string"
+              description: "The math problem to solve"
+            approach:
+              type: "string"
+              description: "Force 'CoD' or 'CoT' approach"
+            maxWordsPerStep:
+              type: "number"
+              description: "Maximum words per step"
+          required: ["problem"]
+        codeSolve:
+          type: "object"
+          description: "Solve a coding problem using Chain of Draft reasoning"
+          properties:
+            problem:
+              type: "string"
+              description: "The coding problem to solve"
+            approach:
+              type: "string"
+              description: "Force 'CoD' or 'CoT' approach"
+            maxWordsPerStep:
+              type: "number"
+              description: "Maximum words per step"
+          required: ["problem"]
+        logicSolve:
+          type: "object"
+          description: "Solve a logic problem using Chain of Draft reasoning"
+          properties:
+            problem:
+              type: "string"
+              description: "The logic problem to solve"
+            approach:
+              type: "string"
+              description: "Force 'CoD' or 'CoT' approach"
+            maxWordsPerStep:
+              type: "number"
+              description: "Maximum words per step"
+          required: ["problem"]
+        getPerformanceStats:
+          type: "object"
+          description: "Get performance statistics for CoD vs CoT approaches"
+          properties:
+            domain:
+              type: "string"
+              description: "Filter for specific domain"
+        getTokenReduction:
+          type: "object"
+          description: "Get token reduction statistics for CoD vs CoT"
+          properties: {}
+        analyzeProblemComplexity:
+          type: "object"
+          description: "Analyze the complexity of a problem"
+          properties:
+            problem:
+              type: "string"
+              description: "The problem to analyze"
+            domain:
+              type: "string"
+              description: "Problem domain"
+          required: ["problem"]
+    required: []
+
+startCommand:
+  type: stdio
+  command: ["/app/docker-entrypoint.sh"]
+  env:
+    NODE_ENV: ${NODE_ENV:-production}
+    LLM_PROVIDER: ${LLM_PROVIDER:-anthropic}
+    LLM_MODEL: ${LLM_MODEL:-claude-3-7-sonnet-latest}
+    ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    OPENAI_API_KEY: ${OPENAI_API_KEY}
+    MISTRAL_API_KEY: ${MISTRAL_API_KEY}
+    ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-https://api.anthropic.com}
+    OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com}
+    OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://localhost:11434}
+    COD_MAX_WORDS_PER_STEP: ${COD_MAX_WORDS_PER_STEP:-5}
+    ENFORCE_FORMAT: ${ENFORCE_FORMAT:-true}
+    ADAPTIVE_WORD_LIMIT: ${ADAPTIVE_WORD_LIMIT:-true}
+    COD_DB_URL: ${COD_DB_URL:-sqlite:///cod_analytics.db}
+    COD_EXAMPLES_DB: ${COD_EXAMPLES_DB:-cod_examples.db}
+    COD_DEFAULT_MODEL: ${COD_DEFAULT_MODEL:-claude-3-7-sonnet-latest}
+    COD_MAX_TOKENS: ${COD_MAX_TOKENS:-500}
+
+commandFunction: |-
+  (config) => ({
+    command: '/app/docker-entrypoint.sh',
+    env: {
+      NODE_ENV: config.NODE_ENV || 'production',
+      LLM_PROVIDER: config.LLM_PROVIDER || 'anthropic',
+      LLM_MODEL: config.LLM_MODEL || 'claude-3-7-sonnet-latest',
+      ANTHROPIC_API_KEY: config.ANTHROPIC_API_KEY,
+      OPENAI_API_KEY: config.OPENAI_API_KEY,
+      MISTRAL_API_KEY: config.MISTRAL_API_KEY,
+      ANTHROPIC_BASE_URL: config.ANTHROPIC_BASE_URL || 'https://api.anthropic.com',
+      OPENAI_BASE_URL: config.OPENAI_BASE_URL || 'https://api.openai.com',
+      OLLAMA_BASE_URL: config.OLLAMA_BASE_URL || 'http://localhost:11434',
+      COD_MAX_WORDS_PER_STEP: config.COD_MAX_WORDS_PER_STEP || '5',
+      ENFORCE_FORMAT: config.ENFORCE_FORMAT || 'true',
+      ADAPTIVE_WORD_LIMIT: config.ADAPTIVE_WORD_LIMIT || 'true',
+      COD_DB_URL: config.COD_DB_URL || 'sqlite:///cod_analytics.db',
+      COD_EXAMPLES_DB: config.COD_EXAMPLES_DB || 'cod_examples.db',
+      COD_DEFAULT_MODEL: config.COD_DEFAULT_MODEL || 'claude-3-7-sonnet-latest',
+      COD_MAX_TOKENS: config.COD_MAX_TOKENS || '500'
+    }
+  })
+
+clients:
+  - claude
+  - cursor
+  - windsurf
+  - cline
+  - typescript
+
+

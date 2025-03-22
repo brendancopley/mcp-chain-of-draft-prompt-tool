@@ -1,0 +1,162 @@
+{
+  "categories": [
+    {
+      "id": "chain-of-draft",
+      "name": "Chain of Draft",
+      "description": "Prompts related to Chain of Draft reasoning approach"
+    },
+    {
+      "id": "analytics",
+      "name": "Analytics",
+      "description": "Tools for analyzing performance and complexity"
+    }
+  ],
+  "prompts": [
+    {
+      "id": "chain_of_draft_solve",
+      "name": "Chain of Draft Solve",
+      "category": "chain-of-draft",
+      "description": "Solve a reasoning problem using Chain of Draft approach",
+      "arguments": [
+        {
+          "name": "problem",
+          "description": "The problem to solve",
+          "required": true
+        },
+        {
+          "name": "domain",
+          "description": "Domain for context (math, logic, code, common-sense, etc.)",
+          "required": false
+        },
+        {
+          "name": "max_words_per_step",
+          "description": "Maximum words per reasoning step (default: adaptive)",
+          "required": false
+        },
+        {
+          "name": "approach",
+          "description": "Force 'CoD' or 'CoT' approach (default: auto-select)",
+          "required": false
+        },
+        {
+          "name": "enforce_format",
+          "description": "Whether to enforce the word limit (default: True)",
+          "required": false
+        },
+        {
+          "name": "adaptive_word_limit",
+          "description": "Adjust word limits based on complexity (default: True)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "math_solve",
+      "name": "Math Problem Solve",
+      "category": "chain-of-draft",
+      "description": "Solve a math problem using Chain of Draft reasoning",
+      "arguments": [
+        {
+          "name": "problem",
+          "description": "The math problem to solve",
+          "required": true
+        },
+        {
+          "name": "approach",
+          "description": "Force 'CoD' or 'CoT' approach (default: auto-select)",
+          "required": false
+        },
+        {
+          "name": "max_words_per_step",
+          "description": "Maximum words per step (default: adaptive)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "code_solve",
+      "name": "Code Problem Solve",
+      "category": "chain-of-draft",
+      "description": "Solve a coding problem using Chain of Draft reasoning",
+      "arguments": [
+        {
+          "name": "problem",
+          "description": "The coding problem to solve",
+          "required": true
+        },
+        {
+          "name": "approach",
+          "description": "Force 'CoD' or 'CoT' approach (default: auto-select)",
+          "required": false
+        },
+        {
+          "name": "max_words_per_step",
+          "description": "Maximum words per step (default: adaptive)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "logic_solve",
+      "name": "Logic Problem Solve",
+      "category": "chain-of-draft",
+      "description": "Solve a logic problem using Chain of Draft reasoning",
+      "arguments": [
+        {
+          "name": "problem",
+          "description": "The logic problem to solve",
+          "required": true
+        },
+        {
+          "name": "approach",
+          "description": "Force 'CoD' or 'CoT' approach (default: auto-select)",
+          "required": false
+        },
+        {
+          "name": "max_words_per_step",
+          "description": "Maximum words per step (default: adaptive)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_performance_stats",
+      "name": "Get Performance Stats",
+      "category": "analytics",
+      "description": "Get performance statistics for CoD vs CoT approaches",
+      "arguments": [
+        {
+          "name": "domain",
+          "description": "Filter for specific domain (optional)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_token_reduction",
+      "name": "Get Token Reduction",
+      "category": "analytics",
+      "description": "Get token reduction statistics for CoD vs CoT",
+      "arguments": []
+    },
+    {
+      "id": "analyze_problem_complexity",
+      "name": "Analyze Problem Complexity",
+      "category": "analytics",
+      "description": "Analyze the complexity of a problem",
+      "arguments": [
+        {
+          "name": "problem",
+          "description": "The problem to analyze",
+          "required": true
+        },
+        {
+          "name": "domain",
+          "description": "Problem domain",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "imports": []
+} 

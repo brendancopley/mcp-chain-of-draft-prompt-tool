@@ -1,42 +1,43 @@
-# Dependencies
-node_modules/
-npm-debug.log
-yarn-debug.log
-yarn-error.log
-
-# Build output
-dist/
-build/
-out/
-
-# Environment variables
+# Environment variables and configuration
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+claude_desktop_config.json
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environment
+venv/
+.venv/
+ENV/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
 
 # Logs
-logs/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
-# Editor directories and files
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Operating System Files
+# System files
 .DS_Store
-Thumbs.db 
-
-# Test directories
-test/
-test-output/
-tests/
-
-# Admin UI (temporary)
-admin-ui/ 
+Thumbs.db
+node_modules/*

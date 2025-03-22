@@ -1,0 +1,41 @@
+{
+  "server": {
+    "name": "MCP Chain of Draft (CoD) Prompt Tool",
+    "version": "1.0.0",
+    "port": 3000,
+    "description": "A server for Chain of Draft reasoning and analysis"
+  },
+  "prompts": {
+    "file": "promptsConfig.json",
+    "registrationMode": "name",
+    "categories": ["chain-of-draft", "analytics"]
+  },
+  "transports": {
+    "default": "stdio",
+    "sse": { 
+      "enabled": false 
+    },
+    "stdio": { 
+      "enabled": true,
+      "debug": true
+    }
+  },
+  "logging": {
+    "directory": "./logs",
+    "level": "info",
+    "format": "json",
+    "transport": true
+  },
+  "analytics": {
+    "databases": {
+      "examples": "cod_examples.db",
+      "analytics": "cod_analytics.db"
+    }
+  },
+  "features": {
+    "adaptiveWordLimit": true,
+    "formatEnforcement": true,
+    "complexityAnalysis": true,
+    "performanceTracking": true
+  }
+} 
