@@ -10,6 +10,7 @@ We're excited to announce version 1.1.0 of the MCP Chain of Draft Prompt Tool! T
   - Cloud services (Claude, GPT, Mistral)
   - Local models via Ollama
   - Custom local LLM endpoints
+- **Pre-built Binaries**: Added standalone executables for all major platforms
 - Enhanced documentation to better explain the tool's core functionality
 - Improved README with clearer explanation of the transformation process
 - Updated Smithery.ai integration and badges
@@ -39,6 +40,21 @@ The tool now supports multiple LLM providers:
 - Custom local LLM endpoints
 - Any model supporting chat completion API
 
+### Pre-built Binaries
+
+We now provide standalone executables for all major platforms:
+
+#### macOS
+- `mcp-chain-of-draft-prompt-tool-macos-arm64` (Apple Silicon)
+- `mcp-chain-of-draft-prompt-tool-macos-x64` (Intel)
+
+#### Linux
+- `mcp-chain-of-draft-prompt-tool-linux-arm64` (ARM64)
+- `mcp-chain-of-draft-prompt-tool-linux-x64` (x64)
+
+#### Windows
+- `mcp-chain-of-draft-prompt-tool-win-x64.exe`
+
 ### Integration
 
 The tool is now available on Smithery.ai:
@@ -49,13 +65,10 @@ https://smithery.ai/server/@brendancopley/mcp-chain-of-draft-prompt-tool
 To get started with the new version:
 
 ```bash
+# Using npm package
 npm install mcp-chain-of-draft-prompt-tool@1.1.0
-```
 
-Or update your existing installation:
-
-```bash
-npm update mcp-chain-of-draft-prompt-tool
+# Or download the appropriate binary for your platform from the releases page
 ```
 
 Configure your preferred LLM:

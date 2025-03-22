@@ -23,7 +23,30 @@
     "test": "node dist/test-query.js",
     "inspector": "npx @modelcontextprotocol/inspector -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY -- node ./index.js",
     "open-browser": "sleep 2 && open http://localhost:5173 || xdg-open http://localhost:5173 || start http://localhost:5173",
-    "test-inspector": "npm run start & sleep 2 && trap 'kill $!' SIGINT SIGTERM; (npm run inspector & npm run open-browser) || kill $!"
+    "test-inspector": "npm run start & sleep 2 && trap 'kill $!' SIGINT SIGTERM; (npm run inspector & npm run open-browser) || kill $!",
+    "build:binaries": "npm run build && pkg .",
+    "build:macos": "npm run build && pkg . --targets node18-macos-x64,node18-macos-arm64",
+    "build:linux": "npm run build && pkg . --targets node18-linux-x64,node18-linux-arm64",
+    "build:windows": "npm run build && pkg . --targets node18-win-x64",
+    "build:all": "npm run build && pkg . --targets node18-macos-x64,node18-macos-arm64,node18-linux-x64,node18-linux-arm64,node18-win-x64"
+  },
+  "pkg": {
+    "scripts": "dist/**/*.js",
+    "assets": [
+      "dist/**/*",
+      "node_modules/**/*",
+      "config.json",
+      "promptsConfig.json",
+      "system_template.md"
+    ],
+    "targets": [
+      "node22-macos-x64",
+      "node22-macos-arm64",
+      "node22-linux-x64",
+      "node22-linux-arm64",
+      "node22-win-x64"
+    ],
+    "outputPath": "binaries"
   },
   "keywords": [
     "mcp",
@@ -55,6 +78,7 @@
   "devDependencies": {
     "@types/node": "^22",
     "@types/node-fetch": "^2.6.11",
+    "pkg": "^5.8.1",
     "shx": "^0.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
