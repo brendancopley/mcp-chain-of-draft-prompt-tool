@@ -112,8 +112,8 @@ This MCP prompt tool implements the Chain of Draft (CoD) reasoning approach as d
    ```
 
 Available scripts:
-- `yarn build`: Compiles TypeScript to JavaScript in the `dist` directory
-- `yarn start`: Runs the compiled server from `dist`
+- `yarn build`: Compiles TypeScript to JavaScript in the `server` directory
+- `yarn start`: Runs the compiled server from `server`
 - `yarn test`: Runs the test query against the server
 - `yarn dev`: Runs the TypeScript server directly using ts-node (useful for development)
 

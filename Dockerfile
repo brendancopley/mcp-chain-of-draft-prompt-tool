@@ -47,4 +47,4 @@ COPY . .
 RUN npm run build
 
 # Command to run the server with virtual environment
-CMD ["/bin/sh", "-c", "cd /app && source /app/venv/bin/activate && node dist/index.js"]
+CMD ["/bin/sh", "-c", "cd /app && source /app/venv/bin/activate && node ./index.js"]
