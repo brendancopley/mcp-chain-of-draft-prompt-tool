@@ -1,5 +1,5 @@
 name: '@brendancopley/mcp-chain-of-draft-prompt-tool'
-description: >-
+description: |-
   A TypeScript-based Model Context Protocol (MCP) server for Chain of Draft
   reasoning
 version: "1.0.0"
