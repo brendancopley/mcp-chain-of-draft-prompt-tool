@@ -1,5 +1,7 @@
 # MCP Chain of Draft (CoD) Prompt Tool
 
+[![smithery badge](https://smithery.ai/badge/@brendancopley/mcp-chain-of-draft-prompt-tool)](https://smithery.ai/server/@brendancopley/mcp-chain-of-draft-prompt-tool)
+
 ## Credits
 
 This project implements the Chain of Draft (CoD) reasoning approach as a Model Context Protocol (MCP) prompt tool for Claude. The core Chain of Draft implementation is based on the work by [stat-guy](https://github.com/stat-guy/chain-of-draft). We extend our gratitude for their pioneering work in developing this efficient reasoning approach.
