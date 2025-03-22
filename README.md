@@ -1,6 +1,11 @@
 # MCP Chain of Draft (CoD) Prompt Tool
 
 [![smithery badge](https://smithery.ai/badge/@brendancopley/mcp-chain-of-draft-prompt-tool)](https://smithery.ai/server/@brendancopley/mcp-chain-of-draft-prompt-tool)
+[![version](https://img.shields.io/npm/v/mcp-chain-of-draft-prompt-tool.svg?style=flat-square)](https://npmjs.org/mcp-chain-of-draft-prompt-tool)
+[![package size](https://packagephobia.com/badge?p=mcp-chain-of-draft-prompt-tool)](https://packagephobia.com/result?p=mcp-chain-of-draft-prompt-tool)
+[![license](https://img.shields.io/npm/l/mcp-chain-of-draft-prompt-tool?color=%23007a1f&style=flat-square)](https://github.com/brendancopley/mcp-chain-of-draft-prompt-tool/blob/master/LICENSE)
+[![stargazers](https://img.shields.io/github/stars/brendancopley/mcp-chain-of-draft-prompt-tool?style=social)](https://github.com/brendancopley/mcp-chain-of-draft-prompt-tool/stargazers)
+[![number of forks](https://img.shields.io/github/forks/brendancopley/mcp-chain-of-draft-prompt-tool?style=social)](https://github.com/brendancopley/mcp-chain-of-draft-prompt-tool/fork)
 
 ## Overview
 
