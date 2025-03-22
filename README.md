@@ -142,12 +142,8 @@ Original Repository: [https://github.com/stat-guy/chain-of-draft](https://github
 ### JavaScript/TypeScript Installation
 
 1. Clone the repository
-2. Install dependencies using yarn (recommended) or npm:
+2. Install dependencies:
    ```bash
-   # Using yarn (recommended)
-   yarn install
-
-   # Using npm
    npm install
    ```
 3. Configure API keys in `.env` file:
@@ -157,24 +153,21 @@ Original Repository: [https://github.com/stat-guy/chain-of-draft](https://github
 4. Build and run the server:
    ```bash
    # Build TypeScript files using Nx
-   yarn nx build
-   # or npm run nx build
+   npm run nx build
 
    # Start the server
-   yarn start
-   # or npm start
+   npm start
 
    # For development with auto-reload:
-   yarn dev
-   # or npm run dev
+   npm run dev
    ```
 
 Available scripts:
-- `yarn nx build`: Compiles TypeScript to JavaScript using Nx build system
-- `yarn build:sea`: Creates Single Executable Applications for all platforms
-- `yarn start`: Runs the compiled server from `dist`
-- `yarn test`: Runs the test query against the server
-- `yarn dev`: Runs the TypeScript server directly using ts-node (useful for development)
+- `npm run nx build`: Compiles TypeScript to JavaScript using Nx build system
+- `npm run build:sea`: Creates Single Executable Applications for all platforms
+- `npm start`: Runs the compiled server from `dist`
+- `npm test`: Runs the test query against the server
+- `npm run dev`: Runs the TypeScript server directly using ts-node (useful for development)
 
 The project uses Nx as its build system, providing:
 - Efficient caching and incremental builds
@@ -193,12 +186,12 @@ The project includes several scripts for building SEA executables:
 
 ```bash
 # Build for all platforms
-yarn build:sea
+npm run build:sea
 
 # Build for specific platforms
-yarn build:macos   # macOS
-yarn build:linux   # Linux
-yarn build:windows # Windows
+npm run build:macos   # macOS
+npm run build:linux   # Linux
+npm run build:windows # Windows
 ```
 
 ### SEA Build Configuration
