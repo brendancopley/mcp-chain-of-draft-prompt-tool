@@ -29,9 +29,19 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Set build-time environment variables
 ENV NODE_ENV=production
 
-# Copy source and build
+# Copy source code
 COPY . .
+
+# Add default config for Chain-of-Tools
+ENV COT_MAX_TOOLS_PER_QUERY=3 \
+    COT_USE_SEMANTIC_MATCHING=true \
+    COT_SEMANTIC_THRESHOLD=0.5
+
+# Build the application
 RUN npm run build
+
+# Create necessary directories
+RUN mkdir -p /app/dist/tools
 
 # Release stage
 FROM node:22-alpine AS release
@@ -50,18 +60,18 @@ COPY --from=builder /app/requirements.txt /app/
 COPY --from=builder /app/venv /app/venv
 COPY --from=builder /app/.env /app/.env
 
-# Set runtime environment variables
+# Set runtime environment variables for Chain-of-Draft and Chain-of-Tools
 ENV PATH="/app/venv/bin:$PATH" \
-    NODE_ENV=production
+    NODE_ENV=production \
+    COT_MAX_TOOLS_PER_QUERY=3 \
+    COT_USE_SEMANTIC_MATCHING=true \
+    COT_SEMANTIC_THRESHOLD=0.5
 
 # Install production dependencies
 RUN npm ci --omit=dev
 
 # Set executable permissions
 RUN chmod +x /app/dist/index.js
-
-# Set production environment
-ENV NODE_ENV=production
 
 # Set the user to non-root for security
 USER node

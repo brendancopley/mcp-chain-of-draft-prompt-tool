@@ -1,8 +1,8 @@
 name: '@brendancopley/mcp-chain-of-draft-prompt-tool'
 description: |-
   A TypeScript-based Model Context Protocol (MCP) server for Chain of Draft
-  reasoning
-version: "1.0.0"
+  reasoning with Chain-of-Tools and Pipeline functionality
+version: "1.2.0"
 build:
   dockerBuildPath: ./
 startCommand:
@@ -70,6 +70,38 @@ startCommand:
         type: string
         description: Maximum tokens for Chain of Draft
         default: '500'
+      COT_MAX_TOOLS_PER_QUERY:
+        type: string
+        description: Maximum number of tools to use per query in Chain of Tools
+        default: '3'
+      COT_USE_SEMANTIC_MATCHING:
+        type: string
+        description: Whether to use semantic matching for tool selection
+        default: 'true'
+      COT_SEMANTIC_THRESHOLD:
+        type: string
+        description: Minimum similarity threshold for semantic tool matching (0-1)
+        default: '0.5'
+      PIPELINE_STORAGE_TYPE:
+        type: string
+        description: Type of storage to use for pipelines (memory, file, redis)
+        default: 'memory'
+      PIPELINE_STORAGE_PATH:
+        type: string
+        description: Path to store pipeline definitions when using file storage
+        default: './pipeline-storage'
+      PIPELINE_MAX_EXECUTIONS:
+        type: string
+        description: Maximum number of concurrent pipeline executions
+        default: '100'
+      PIPELINE_EXECUTION_TIMEOUT:
+        type: string
+        description: Timeout in milliseconds for pipeline executions
+        default: '3600000'
+      PIPELINE_HUMAN_INTERACTION_TIMEOUT:
+        type: string
+        description: Timeout in milliseconds for human interaction in pipelines
+        default: '86400000'
     required: []
   commandFunction: |-
     (config) => ({
@@ -91,7 +123,15 @@ startCommand:
         COD_DB_URL: config.COD_DB_URL || 'sqlite:///cod_analytics.db',
         COD_EXAMPLES_DB: config.COD_EXAMPLES_DB || 'cod_examples.db',
         COD_DEFAULT_MODEL: config.COD_DEFAULT_MODEL || 'claude-3-7-sonnet-latest',
-        COD_MAX_TOKENS: config.COD_MAX_TOKENS || '500'
+        COD_MAX_TOKENS: config.COD_MAX_TOKENS || '500',
+        COT_MAX_TOOLS_PER_QUERY: config.COT_MAX_TOOLS_PER_QUERY || '3',
+        COT_USE_SEMANTIC_MATCHING: config.COT_USE_SEMANTIC_MATCHING || 'true',
+        COT_SEMANTIC_THRESHOLD: config.COT_SEMANTIC_THRESHOLD || '0.5',
+        PIPELINE_STORAGE_TYPE: config.PIPELINE_STORAGE_TYPE || 'memory',
+        PIPELINE_STORAGE_PATH: config.PIPELINE_STORAGE_PATH || './pipeline-storage',
+        PIPELINE_MAX_EXECUTIONS: config.PIPELINE_MAX_EXECUTIONS || '100',
+        PIPELINE_EXECUTION_TIMEOUT: config.PIPELINE_EXECUTION_TIMEOUT || '3600000',
+        PIPELINE_HUMAN_INTERACTION_TIMEOUT: config.PIPELINE_HUMAN_INTERACTION_TIMEOUT || '86400000'
       }
     })
 

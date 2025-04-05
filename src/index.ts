@@ -25,8 +25,19 @@ import {
   FormatEnforcer,
   ReasoningSelector,
   ToolArguments
-} from './types';
+} from './types.js';
 import { logger } from './utils/logger.js';
+import { defaultChainOfTools } from './tools/index.js';
+import {
+  createPipelineTool,
+  listPipelinesTool,
+  getPipelineTool,
+  executePipelineTool,
+  pipelineHumanResponseTool,
+  pipelineStatusTool,
+  loadExamplePipelinesTool
+} from './tools/index.js';
+import { Tool, ToolResult, ToolError } from './tools/types.js';
 
 // Common interfaces for response types
 interface LLMMessage {
@@ -313,7 +324,7 @@ const analyticsDb: AnalyticsDatabase = {
   },
   getPerformanceByDomain(domain?: string): PerformanceStats[] {
     let filtered = domain 
-      ? this.records.filter(r => r.domain === domain) 
+      ? this.records.filter((r: any) => r.domain === domain) 
       : this.records;
     
     // Group by domain and approach
@@ -427,7 +438,7 @@ const complexityEstimator: ComplexityEstimator = {
     // Count indicators
     const indicators = this.complexityIndicators[domain] || this.complexityIndicators.general || [];
     const lowerProblem = problem.toLowerCase();
-    const foundIndicators = indicators.filter(i => lowerProblem.includes(i.toLowerCase()));
+    const foundIndicators = indicators.filter((i: string) => lowerProblem.includes(i.toLowerCase()));
     
     // Count questions
     const questionCount = (problem.match(/\?/g) || []).length;
@@ -598,7 +609,7 @@ After your reasoning, state your final answer clearly.
 }
 
 // Chain of Draft client implementation
-const chainOfDraftClient = {
+export const chainOfDraftClient = {
   async solveWithReasoning(params: ChainOfDraftParams): Promise<ChainOfDraftResult> {
     const {
       problem,
@@ -861,15 +872,114 @@ const COMPLEXITY_TOOL = {
   }
 };
 
+// Define the Chain of Tools tool after other tool definitions
+const CHAIN_OF_TOOLS_TOOL = {
+  name: "chain_of_tools_solve",
+  description: "Find and execute the most relevant tools for a given problem using semantic matching",
+  inputSchema: {
+    type: "object",
+    properties: {
+      query: {
+        type: "string",
+        description: "The natural language query or problem to solve"
+      },
+      max_tools: {
+        type: "number",
+        description: "Maximum number of tools to use"
+      },
+      params: {
+        type: "object",
+        description: "Additional parameters to pass to the tools"
+      }
+    },
+    required: ["query"]
+  }
+};
+
+// After initializing the MCP server but before adding request handlers, add this code to register tools
+// Register all MCP tools with Chain-of-Tools
+function registerMCPTools() {
+  // Create wrapper tools for the MCP tools
+  const chainOfDraftWrapperTool = {
+    name: 'chain_of_draft_solve',
+    description: 'Transforms prompts using chain-of-draft reasoning for any problem',
+    parameters: [
+      {
+        name: 'problem',
+        type: 'string',
+        description: 'The problem to solve',
+        required: true
+      },
+      {
+        name: 'domain',
+        type: 'string',
+        description: 'Domain for context (math, logic, code, common-sense, etc.)',
+        required: false
+      }
+    ],
+    execute: async (params: any) => {
+      // Forward to the chainOfDraftClient
+      const result = await chainOfDraftClient.solveWithReasoning(params);
+      return {
+        success: true,
+        data: result,
+        metrics: {
+          startTime: Date.now(),
+          endTime: Date.now(),
+          latencyMs: 0
+        }
+      };
+    }
+  };
+
+  const mathWrapperTool = {
+    name: 'math_solve',
+    description: 'Solves math problems using chain-of-draft reasoning',
+    parameters: [
+      {
+        name: 'problem',
+        type: 'string',
+        description: 'The math problem to solve',
+        required: true
+      }
+    ],
+    execute: async (params: any) => {
+      // Set domain to math and forward to chainOfDraftClient
+      const result = await chainOfDraftClient.solveWithReasoning({
+        ...params,
+        domain: 'math'
+      });
+      return {
+        success: true,
+        data: result,
+        metrics: {
+          startTime: Date.now(),
+          endTime: Date.now(),
+          latencyMs: 0
+        }
+      };
+    }
+  };
+
+  // Register the wrapper tools with Chain-of-Tools
+  defaultChainOfTools.registerTool(chainOfDraftWrapperTool);
+  defaultChainOfTools.registerTool(mathWrapperTool);
+  
+  logger.info('Registered MCP tools with Chain-of-Tools');
+}
+
 // Initialize the MCP server
 const server = new Server({
   name: "mcp-chain-of-draft-prompt-tool",
-  version: "1.0.0"
+  version: "1.1.0" // Updated version to match smithery.yaml
 }, {
   capabilities: {
     tools: {},
   },
 });
+
+// Now register the MCP tools with Chain-of-Tools
+registerMCPTools();
 
 // Expose available tools
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
@@ -880,7 +990,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     LOGIC_TOOL,
     PERFORMANCE_TOOL,
     TOKEN_TOOL,
-    COMPLEXITY_TOOL
+    COMPLEXITY_TOOL,
+    CHAIN_OF_TOOLS_TOOL,
+    createPipelineTool,
+    listPipelinesTool,
+    getPipelineTool,
+    executePipelineTool,
+    pipelineHumanResponseTool,
+    pipelineStatusTool,
+    loadExamplePipelinesTool
   ],
 }));
 
@@ -993,6 +1111,114 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           type: "text",
           text: formattedResponse
         }]
+      };
+    }
+    
+    // Chain of Tools solver
+    if (name === "chain_of_tools_solve" && args?.query) {
+      const maxTools = args.max_tools ? Number(args.max_tools) : Number(process.env.COT_MAX_TOOLS_PER_QUERY || '3');
+      const params = args.params || {};
+      
+      logger.info(`Executing Chain of Tools with query: ${args.query}`);
+      
+      // Configure the Chain of Tools
+      const useSemanticMatching = process.env.COT_USE_SEMANTIC_MATCHING === 'true';
+      const semanticThreshold = Number(process.env.COT_SEMANTIC_THRESHOLD || '0.5');
+      
+      // Execute the query
+      const results = await defaultChainOfTools.findAndExecuteTools(args.query, params);
+      
+      // Format the response
+      let formattedResponse = `Chain of Tools results for: "${args.query}"\n\n`;
+      
+      if (results.length === 0) {
+        formattedResponse += "No matching tools found for this query.";
+      } else {
+        for (let i = 0; i < results.length; i++) {
+          const result = results[i];
+          formattedResponse += `Tool ${i+1}: ${result.success ? 'Successfully executed' : 'Execution failed'}\n`;
+          
+          if (result.success && result.data) {
+            if (typeof result.data === 'object') {
+              // Handle special case for Chain of Draft results
+              if ('reasoning_steps' in result.data && 'final_answer' in result.data) {
+                formattedResponse += `\nReasoning:\n${result.data.reasoning_steps}\n\n`;
+                formattedResponse += `Answer: ${result.data.final_answer}\n\n`;
+              } else {
+                // Generic object handling
+                formattedResponse += `\nResult:\n${JSON.stringify(result.data, null, 2)}\n\n`;
+              }
+            } else {
+              formattedResponse += `\nResult: ${result.data}\n\n`;
+            }
+          } else if (result.error) {
+            formattedResponse += `\nError: ${result.error.message}\n\n`;
+          }
+          
+          // Add metrics
+          formattedResponse += `Execution time: ${result.metrics.latencyMs}ms\n\n`;
+        }
+        
+        // Add summary
+        const successCount = results.filter(r => r.success).length;
+        formattedResponse += `Summary: ${successCount} of ${results.length} tools executed successfully.`;
+      }
+      
+      return {
+        content: [{
+          type: "text",
+          text: formattedResponse
+        }]
+      };
+    }
+    
+    // Pipeline tools
+    if (name === "pipeline_create") {
+      const result = await createPipelineTool.execute(args);
+      return {
+        content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+      };
+    }
+    
+    if (name === "pipeline_list") {
+      const result = await listPipelinesTool.execute(args);
+      return {
+        content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+      };
+    }
+    
+    if (name === "pipeline_get" && args?.pipelineId) {
+      const result = await getPipelineTool.execute(args);
+      return {
+        content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+      };
+    }
+    
+    if (name === "pipeline_execute" && args?.pipelineId) {
+      const result = await executePipelineTool.execute(args);
+      return {
+        content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+      };
+    }
+    
+    if (name === "pipeline_human_response" && args?.executionId) {
+      const result = await pipelineHumanResponseTool.execute(args);
+      return {
+        content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+      };
+    }
+    
+    if (name === "pipeline_status" && args?.executionId) {
+      const result = await pipelineStatusTool.execute(args);
+      return {
+        content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+      };
+    }
+    
+    if (name === "pipeline_load_examples") {
+      const result = await loadExamplePipelinesTool.execute(args);
+      return {
+        content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
       };
     }
     

@@ -3,15 +3,6 @@
   "$schema": "node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "src",
   "projectType": "application",
-  "plugins": [
-    {
-      "plugin": "@getlarge/nx-node-sea",
-      "options": {
-        "seaTargetName": "sea-build",
-        "buildTarget": "build"
-      }
-    }
-  ],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
@@ -20,7 +11,30 @@
         "outputPath": "dist",
         "main": "src/index.ts",
         "tsConfig": "tsconfig.json",
-        "assets": ["package.json"]
+        "assets": [
+          {
+            "glob": "**/*.js",
+            "input": "src/tools/cli",
+            "output": "tools/cli"
+          },
+          {
+            "glob": "**/*.js",
+            "input": "src/examples/cli",
+            "output": "examples/cli"
+          }
+        ]
+      }
+    },
+    "build-post": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "commands": [
+          "chmod +x dist/*.js dist/tools/cli/*.js dist/examples/cli/*.js",
+          "cp src/tools/cli/*.js dist/tools/cli/ 2>/dev/null || true",
+          "cp src/examples/cli/*.js dist/examples/cli/ 2>/dev/null || true"
+        ],
+        "parallel": false
       }
     }
   }

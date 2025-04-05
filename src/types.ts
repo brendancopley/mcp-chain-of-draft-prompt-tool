@@ -103,4 +103,21 @@ export interface ToolArguments {
   approach?: string;
   enforce_format?: boolean;
   adaptive_word_limit?: boolean;
+  
+  // Chain-of-Tools specific arguments
+  query?: string;
+  max_tools?: number;
+  params?: any;
+  
+  // Pipeline-related arguments
+  pipelineId?: string;
+  executionId?: string;
+  name?: string;
+  description?: string;
+  definition?: any;
+  initialState?: any;
+  approved?: boolean;
+  input?: any;
+  modifications?: any;
+  notes?: string;
 } 

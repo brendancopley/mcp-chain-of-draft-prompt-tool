@@ -7,7 +7,11 @@
     "node": ">=22"
   },
   "bin": {
-    "mcp-chain-of-draft-prompt-tool": "dist/index.js"
+    "mcp-chain-of-draft-prompt-tool": "dist/index.js",
+    "cod-tools-list": "dist/tools/cli/list-tools.js",
+    "cod-pipeline-list": "dist/tools/cli/list-pipelines.js",
+    "cod-pipeline-execute": "dist/tools/cli/execute-pipeline.js",
+    "cod-pipeline-examples": "dist/tools/cli/load-example-pipelines.js"
   },
   "files": [
     "dist",
@@ -15,7 +19,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc && shx chmod +x dist/*.js",
+    "build": "nx build && nx build-post",
+    "build:clean": "rm -rf dist && npm run build",
     "build:docker": "docker build -t mcp-chain-of-draft-prompt-tool .",
     "build:sea": "nx build && nx run-many --target=sea --all",
     "build:macos": "nx build && nx run-many --target=sea --all --args=\"--platform=darwin\"",
@@ -23,18 +28,33 @@
     "build:windows": "nx build && nx run-many --target=sea --all --args=\"--platform=win32\"",
     "watch": "tsc --watch",
     "start": "node dist/index.js",
-    "dev": "ts-node-esm dist/index.ts",
+    "dev": "npm run build && node dist/index.js",
     "test": "node dist/test-query.js",
+    "test:pipeline": "jest --testPathPattern=__tests__/pipeline",
+    "test:tools": "jest --testPathPattern=__tests__/tools",
     "inspector": "npx @modelcontextprotocol/inspector -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY -- node dist/index.js",
     "open-browser": "sleep 2 && open http://localhost:5173 || xdg-open http://localhost:5173 || start http://localhost:5173",
-    "test-inspector": "npm run start & sleep 2 && trap 'kill $!' SIGINT SIGTERM; (npm run inspector & npm run open-browser) || kill $!"
+    "test-inspector": "npm run start & sleep 2 && trap 'kill $!' SIGINT SIGTERM; (npm run inspector & npm run open-browser) || kill $!",
+    "pipeline:list": "node dist/examples/cli/list-pipelines.js",
+    "pipeline:create": "echo 'Pipeline creation is not available in this demo version'",
+    "pipeline:execute": "node dist/examples/cli/execute-pipeline.js",
+    "pipeline:load-examples": "node dist/examples/cli/load-example-pipelines.js",
+    "pipeline:status": "echo 'Pipeline status check is not available in this demo version'",
+    "tools:list": "node dist/examples/cli/list-tools.js",
+    "tools:load-mcp": "node dist/examples/load-mcp-tools.js",
+    "demo:simple-pipeline": "echo 'Building a simple math pipeline demo...' && node dist/examples/cli/execute-pipeline.js 'math-pipeline' '{\"number1\": 247, \"number2\": 394}'",
+    "demo:data-pipeline": "echo 'Building a data analysis pipeline demo...' && node dist/examples/cli/execute-pipeline.js 'data-analysis-pipeline'",
+    "demo:batch-pipeline": "echo 'Building a batch processing pipeline demo...' && node dist/examples/cli/execute-pipeline.js 'batch-processing-pipeline'",
+    "validate:pipeline": "echo 'Pipeline validation is not available in this demo version'"
   },
   "keywords": [
     "mcp",
     "chain-of-draft",
     "claude",
     "reasoning",
-    "prompt-tool"
+    "prompt-tool",
+    "pipeline",
+    "chain-of-tools"
   ],
   "author": "brendancopley",
   "license": "MIT",
@@ -54,17 +74,23 @@
     "dotenv": "^16.4.5",
     "node-fetch": "^3.3.2",
     "ollama": "^0.5.14",
-    "openai": "^4.28.0"
+    "openai": "^4.28.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@getlarge/nx-node-sea": "^0.2.0",
+    "@jest/globals": "^29.7.0",
     "@nx/devkit": "^20.6.2",
     "@nx/js": "^20.6.2",
     "@nx/workspace": "^20.6.2",
+    "@types/jest": "^29.5.14",
     "@types/node": "^22",
     "@types/node-fetch": "^2.6.11",
+    "@types/uuid": "^10.0.0",
+    "jest": "^29.7.0",
     "nx": "^20.6.2",
     "shx": "^0.4.0",
+    "ts-jest": "^29.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
