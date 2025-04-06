@@ -21,7 +21,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Path to the Python server script
-const serverPath = path.join(__dirname, 'server.py');
+const serverPath = path.join(__dirname, 'python/server.py');
 
 logger.devLog('Server initialization', {
   serverPath,
@@ -118,7 +118,7 @@ process.on('SIGTERM', () => {
 });
 
 export async function startServer() {
-  const serverPath = path.join(process.cwd(), 'server.py');
+  const serverPath = path.join(process.cwd(), 'python/server.py');
 
   logger.devLog('Starting server', {
     serverPath,

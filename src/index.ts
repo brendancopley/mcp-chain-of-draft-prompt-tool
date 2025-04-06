@@ -24,16 +24,15 @@ import {
   ComplexityEstimator,
   FormatEnforcer,
   ReasoningSelector,
-  ToolArguments
+  ToolArguments,
+  LLMMessage
 } from './types';
 import { logger } from './utils/logger.js';
+import { config } from './core/config.js';
+import { llmClient as unifiedLLMClient } from './core/llm-client.js';
+import { chainOfDraftGenerator } from './grpo/chain-of-draft-generator.js';
 
 // Common interfaces for response types
-interface LLMMessage {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-}
-
 interface LLMResponse {
   content: string;
   usage?: {
@@ -1110,7 +1109,7 @@ async function startServer() {
   try {
     // Connect to the transport
     await server.connect(transport);
-    logger.success('Server connected to transport');
+    logger.info('Server connected to transport');
 
     // Keep the process alive
     process.stdin.resume();
@@ -1122,7 +1121,7 @@ async function startServer() {
         logger.info(`Received ${signal}, shutting down gracefully...`);
         try {
           await server.close();
-          logger.success('Server disconnected successfully');
+          logger.info('Server disconnected successfully');
           process.exit(0);
         } catch (error) {
           logger.error('Error during shutdown:', error);
@@ -1145,4 +1144,99 @@ startServer().catch(error => {
 process.on('uncaughtException', (error) => {
   logger.error('Fatal error:', error);
   process.exit(1);
-}); 
+});
+
+async function main() {
+  let problemText = "";
+
+  // Use command-line arguments if provided
+  if (process.argv.length >= 3) {
+    problemText = process.argv.slice(2).join(" ");
+  } else {
+    console.log("Please type your prompt, then press Ctrl+D:");
+    process.stdin.setEncoding("utf8");
+    problemText = await new Promise((resolve) => {
+      let input = "";
+      process.stdin.on("data", (chunk) => { input += chunk; });
+      process.stdin.on("end", () => { resolve(input.trim()); });
+    });
+  }
+
+  if (!problemText) {
+    console.error("No input provided.");
+    process.exit(1);
+  }
+
+  // Skip database initialization when using test provider
+  if (process.env.LLM_PROVIDER === 'test') {
+    console.log("Using test provider. Skipping database initialization.");
+    
+    // Create a mock LLM client for testing
+    const mockLLMClient = {
+      chat: async (messages: any) => ({
+        content: "This is a test response for Chain of Draft. The solution is provided step by step with clear reasoning. For 2x + 5 = 15, I would subtract 5 from both sides to get 2x = 10, then divide by 2 to get x = 5."
+      })
+    };
+    
+    // Use the mock client instead of trying to load the real one
+    const { chainOfDraftGenerator } = await import('./grpo/chain-of-draft-generator.js');
+    
+    console.log("Detecting problem type and generating Chain of Draft prompt...");
+    const generatedPrompt = chainOfDraftGenerator.generatePrompt(problemText);
+    console.log(`Using Chain of Draft for problem type: ${generatedPrompt.template_id}`);
+    
+    console.log("Generated Prompt:");
+    console.log(generatedPrompt.content);
+    
+    // Prepare messages
+    const messages = [
+      { role: "system", content: "You are a helpful assistant." },
+      { role: "user", content: generatedPrompt.content }
+    ];
+    
+    console.log("Sending prompt to the LLM...");
+    const response = await mockLLMClient.chat(messages);
+    console.log("LLM Response:");
+    console.log(response.content);
+    
+    // Exit early - no need to run the rest of the function
+    return;
+  }
+  
+  // Initialize database connections if needed
+  try {
+    // Import vector database only if needed
+    const { vectorDatabase } = await import('./vector-db/vector-database.js');
+    await vectorDatabase.initialize();
+  } catch (error) {
+    console.error("Warning: Vector database initialization failed:", error);
+    console.log("Continuing without vector database support.");
+  }
+
+  // Generate a Chain of Draft prompt based on the problem text
+  // The chainOfDraftGenerator will automatically detect the problem type
+  console.log("Detecting problem type and generating Chain of Draft prompt...");
+  const generatedPrompt = chainOfDraftGenerator.generatePrompt(problemText);
+  console.log(`Using Chain of Draft for problem type: ${generatedPrompt.template_id}`);
+
+  console.log("Generated Prompt:");
+  console.log(generatedPrompt.content);
+
+  // Prepare messages for the LLM client
+  const messages: LLMMessage[] = [
+    { role: "system", content: "You are a helpful assistant." },
+    { role: "user", content: generatedPrompt.content }
+  ];
+
+  console.log("Sending prompt to the LLM...");
+  try {
+    const response = await unifiedLLMClient.chat(messages, { max_tokens: 1500, temperature: 0.7 });
+    console.log("LLM Response:");
+    console.log(response.content);
+  } catch (error) {
+    console.error("Error communicating with LLM:", error);
+    process.exit(1);
+  }
+}
+
+main(); 
