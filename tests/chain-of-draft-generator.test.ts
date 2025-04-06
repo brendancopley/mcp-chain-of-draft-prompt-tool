@@ -1,46 +1,66 @@
 // @ts-nocheck
 // tests/chain-of-draft-generator.test.ts
-import { jest, describe, beforeEach, test, expect, afterEach } from '@jest/globals';
-import { chainOfDraftGenerator } from '../src/grpo/chain-of-draft-generator.js';
-
-// Mock logger
-jest.mock('../src/utils/logger.js', () => ({
-  logger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-    devLog: jest.fn()
-  }
-}));
-
-// Mock promptGenerator
-jest.mock('../src/grpo/prompt-generator.js', () => ({
-  promptGenerator: {
-    createTemplate: jest.fn().mockImplementation((templateData) => ({
-      ...templateData,
-      id: `mock-${templateData.category}-id`,
-      created_at: new Date(),
-      updated_at: new Date()
-    })),
-    generatePrompt: jest.fn().mockImplementation((templateId, params) => ({
-      id: 'mock-prompt-id',
-      template_id: templateId,
-      content: `Mock content for ${templateId}`,
-      parameters: params,
-      created_at: new Date()
-    }))
-  }
-}));
+import { describe, test, expect } from '@jest/globals';
+import {
+  chainOfDraftGenerator,
+  mathCoDTemplateId,
+  logicCoDTemplateId,
+  codeCoDTemplateId,
+  generalCoDTemplateId
+} from '../src/grpo/chain-of-draft-generator.js';
+import { promptGenerator } from '../src/grpo/prompt-generator.js';
 
 describe('Chain of Draft Generator', () => {
-  // Add a simple placeholder test for now to expand coverage
-  test('Chain of Draft Generator exists and has expected functions', () => {
-    // Just verify that the module exports what we expect
-    expect(chainOfDraftGenerator).toBeDefined();
-    expect(typeof chainOfDraftGenerator.generatePrompt).toBe('function');
+  // Test the exported template IDs
+  test('should export template IDs', () => {
+    expect(mathCoDTemplateId).toBeDefined();
+    expect(logicCoDTemplateId).toBeDefined();
+    expect(codeCoDTemplateId).toBeDefined();
+    expect(generalCoDTemplateId).toBeDefined();
+  });
+  
+  // Test the template selection logic
+  test('should return the prompt from promptGenerator', () => {
+    const origGeneratePrompt = promptGenerator.generatePrompt;
+    const expectedResult = {
+      id: 'test-prompt-id',
+      content: 'Test prompt content',
+      parameters: { problem: 'Test problem' }
+    };
     
-    // Test generating a prompt
-    const result = chainOfDraftGenerator.generatePrompt('Test problem');
-    expect(result).toBeDefined();
+    try {
+      // Override the function to return our test value
+      promptGenerator.generatePrompt = function() {
+        return expectedResult;
+      };
+      
+      const result = chainOfDraftGenerator.generatePrompt('Test problem');
+      expect(result).toEqual(expectedResult);
+    } finally {
+      // Restore the original function
+      promptGenerator.generatePrompt = origGeneratePrompt;
+    }
+  });
+  
+  // Test overall classification for general problems
+  test('should use general template for unclassified problems', () => {
+    const origGeneratePrompt = promptGenerator.generatePrompt;
+    let templateIdUsed;
+    
+    try {
+      promptGenerator.generatePrompt = function(templateId, params) {
+        templateIdUsed = templateId;
+        return { id: templateId, content: 'test', parameters: params };
+      };
+      
+      // A problem with no mathematical, logical, or coding keywords
+      const generalProblem = 'What is the capital of France?';
+      chainOfDraftGenerator.generatePrompt(generalProblem);
+      
+      // Should use the general template ID
+      expect(templateIdUsed).toBe(generalCoDTemplateId);
+    } finally {
+      promptGenerator.generatePrompt = origGeneratePrompt;
+    }
   });
 }); 
