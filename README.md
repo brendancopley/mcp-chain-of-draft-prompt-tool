@@ -6,6 +6,7 @@
 [![license](https://img.shields.io/npm/l/mcp-chain-of-draft-prompt-tool?color=%23007a1f&style=flat-square)](https://github.com/brendancopley/mcp-chain-of-draft-prompt-tool/blob/master/LICENSE)
 [![stargazers](https://img.shields.io/github/stars/brendancopley/mcp-chain-of-draft-prompt-tool?style=social)](https://github.com/brendancopley/mcp-chain-of-draft-prompt-tool/stargazers)
 [![number of forks](https://img.shields.io/github/forks/brendancopley/mcp-chain-of-draft-prompt-tool?style=social)](https://github.com/brendancopley/mcp-chain-of-draft-prompt-tool/fork)
+[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/c7233b8a-33e4-492d-8840-e3bddcf48aa3)
 
 ## Overview
 
