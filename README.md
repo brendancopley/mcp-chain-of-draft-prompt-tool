@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/brendancopley-mcp-chain-of-draft-prompt-tool-badge.png)](https://mseep.ai/app/brendancopley-mcp-chain-of-draft-prompt-tool)
+
 # MCP Chain of Draft (CoD) Prompt Tool
 
 [![smithery badge](https://smithery.ai/badge/@brendancopley/mcp-chain-of-draft-prompt-tool)](https://smithery.ai/server/@brendancopley/mcp-chain-of-draft-prompt-tool)
